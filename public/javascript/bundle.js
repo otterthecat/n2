@@ -1,31 +1,35 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var El = require('./element');
 
-var mo = function (){
-	console.log('wtf = ', this);
-};
-
 var h1 = {
-	tag: 'h1',
-	attributes: {
+	tag : 'h1',
+	attributes : {
 		'data-headline': 'title',
 		'class': 'headline'
 	},
-	content: 'This is boring content :(',
-	events: {
-		'click' : function (ev) {
+	content : 'This is boring content :(',
+	events : {
+		click : function (ev) {
+			'use strict';
 			console.log('clicked ', ev);
 		},
-		'mouseover' : mo
+		mouseover : function (ev) {
+			'use strict';
+			console.log('over this, ', this);
+		}
 	}
-}
+};
 
 var headline = new El(h1);
 var a = document.querySelector('.a');
 var b = document.querySelector('.b');
-var c = document.querySelector('.c');
+
+a.addEventListener('click', function (){
+	headline.toggle('hide');
+});
 
 headline.insertAfter(b);
+
 
 },{"./element":2}],2:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
@@ -49,7 +53,7 @@ var applyEvents = function (obj) {
 
 	for(var ev in obj) {
 		this.addEventListener(ev, obj[ev]);
-	};
+	}
 	return this;
 };
 
@@ -68,8 +72,7 @@ El.prototype.init = function (obj) {
 	this.node = document.createElement(obj.tag);
 	applyAttributes.call(this.node, obj.attributes);
 	this.node.innerHTML = obj.content;
-	var x = applyEvents.call(this.node, obj.events);
-	console.log('x = ', x);
+	applyEvents.call(this.node, obj.events);
 	return this;
 };
 
@@ -116,6 +119,14 @@ El.prototype.refresh = function (data, callback){
 	this.emit('refresh', this.node, data);
 	callback(this.node, data);
 	return this;
+};
+
+El.prototype.toggle = function (str) {
+	'use strict';
+
+	// yeah, classList isn't well supported in IE until 10
+	// oh well.
+	this.node.classList.toggle(str);
 };
 
 module.exports = El;

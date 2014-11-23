@@ -11,7 +11,7 @@ var complexityOpts = {
 module.exports = {
 
 	browserSync: {
-		proxy: 'localhost/github/big-gulp/public'
+		proxy: 'localhost/github/nsquared/public'
 	},
 
 	plato: {

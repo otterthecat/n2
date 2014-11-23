@@ -14,6 +14,15 @@ var applyAttributes = function (obj) {
 	return this;
 };
 
+var applyEvents = function (obj) {
+	'use strict';
+
+	for(var ev in obj) {
+		this.addEventListener(ev, obj[ev]);
+	}
+	return this;
+};
+
 var El = function (obj) {
 	'use strict';
 
@@ -29,6 +38,7 @@ El.prototype.init = function (obj) {
 	this.node = document.createElement(obj.tag);
 	applyAttributes.call(this.node, obj.attributes);
 	this.node.innerHTML = obj.content;
+	applyEvents.call(this.node, obj.events);
 	return this;
 };
 
@@ -75,6 +85,14 @@ El.prototype.refresh = function (data, callback){
 	this.emit('refresh', this.node, data);
 	callback(this.node, data);
 	return this;
+};
+
+El.prototype.toggle = function (str) {
+	'use strict';
+
+	// yeah, classList isn't well supported in IE until 10
+	// oh well.
+	this.node.classList.toggle(str);
 };
 
 module.exports = El;

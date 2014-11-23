@@ -2,7 +2,7 @@ module.exports = {
 
 	js: ['./client/**/*.js'],
 
-	app: ['./client/app.js'],
+	app: ['./client/main.js'],
 
 	less: ['./less/*.less'],
 
