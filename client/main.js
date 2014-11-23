@@ -6,9 +6,9 @@ var h1 = {
 		'data-headline': 'title',
 		'class': 'headline'
 	},
-	content : 'This is boring content :(',
+	content : 'This is boring content :( <div class="test">Foobar</div>',
 	events : {
-		click : function (ev) {
+		".test click" : function (ev) {
 			'use strict';
 			console.log('clicked ', ev);
 		},

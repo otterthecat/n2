@@ -16,8 +16,18 @@ var applyAttributes = function (obj) {
 
 var applyEvents = function (obj) {
 	'use strict';
-
 	for(var ev in obj) {
+
+		var lastIndex = ev.lastIndexOf(' ');
+		if(lastIndex < 0){
+			this.addEventListener(ev, obj[ev]);
+		}
+		else {
+			var nodeArray = [].slice.call(this.querySelectorAll(ev.substr(0, lastIndex)));
+			nodeArray.forEach(function (el){
+				el.addEventListener(ev.substr(lastIndex + 1), obj[ev]);
+			});
+		}
 		this.addEventListener(ev, obj[ev]);
 	}
 	return this;
