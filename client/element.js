@@ -73,7 +73,6 @@ El.prototype.insertAfter = function (targetNode) {
 	return this;
 };
 
-
 El.prototype.prepend = function (targetNode) {
 	'use strict';
 
@@ -81,10 +80,19 @@ El.prototype.prepend = function (targetNode) {
 	return this;
 };
 
+El.prototype.remove = function () {
+	'use strict';
+
+	this.node.remove();
+	this.emit('remove', this.node);
+	return this;
+};
+
 El.prototype.render = function () {
 	'use strict';
 
 	this.node.innerHTML(this.template.render());
+	this.emit('render', this.node);
 	return this;
 };
 

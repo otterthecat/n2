@@ -24,8 +24,13 @@ var a = document.querySelector('.a');
 var b = document.querySelector('.b');
 
 a.addEventListener('click', function (){
-	headline.toggle('hide');
+	headline.remove();
 });
 
 headline.insertAfter(b);
+
+setTimeout(function(){
+	headline.insertAfter(b);
+	console.log('done');
+}, 5000);
 
