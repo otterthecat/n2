@@ -6,7 +6,7 @@ module.exports = {
 	},
 	content : 'This is boring content :( <div class="test">Foobar</div>',
 	events : {
-		'test click' : function (ev) {
+		'.test click' : function (ev) {
 			'use strict';
 			console.log('clicked ', ev);
 		},
