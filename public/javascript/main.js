@@ -15,6 +15,25 @@ var applyAttributes = function (obj) {
 	return this;
 };
 
+var applyEvents = function (obj) {
+	'use strict';
+	for(var ev in obj) {
+
+		var lastIndex = ev.lastIndexOf(' ');
+		if(lastIndex < 0){
+			this.addEventListener(ev, obj[ev]);
+		}
+		else {
+			var nodeArray = [].slice.call(this.querySelectorAll(ev.substr(0, lastIndex)));
+			nodeArray.forEach(function (el){
+				el.addEventListener(ev.substr(lastIndex + 1), obj[ev]);
+			});
+		}
+		this.addEventListener(ev, obj[ev]);
+	}
+	return this;
+};
+
 var El = function (obj) {
 	'use strict';
 
@@ -30,6 +49,7 @@ El.prototype.init = function (obj) {
 	this.node = document.createElement(obj.tag);
 	applyAttributes.call(this.node, obj.attributes);
 	this.node.innerHTML = obj.content;
+	applyEvents.call(this.node, obj.events);
 	return this;
 };
 
@@ -54,7 +74,6 @@ El.prototype.insertAfter = function (targetNode) {
 	return this;
 };
 
-
 El.prototype.prepend = function (targetNode) {
 	'use strict';
 
@@ -62,10 +81,19 @@ El.prototype.prepend = function (targetNode) {
 	return this;
 };
 
+El.prototype.remove = function () {
+	'use strict';
+
+	this.node.remove();
+	this.emit('remove', this.node);
+	return this;
+};
+
 El.prototype.render = function () {
 	'use strict';
 
 	this.node.innerHTML(this.template.render());
+	this.emit('render', this.node);
 	return this;
 };
 
@@ -78,28 +106,59 @@ El.prototype.refresh = function (data, callback){
 	return this;
 };
 
+El.prototype.toggle = function (str) {
+	'use strict';
+
+	// yeah, classList isn't well supported in IE until 10
+	// oh well.
+	this.node.classList.toggle(str);
+};
+
 module.exports = El;
 
-},{"events":3,"util":7}],2:[function(require,module,exports){
-var Element = require('./element');
-
-var h1 = {
-	tag: 'h1',
-	attributes: {
+},{"events":4,"util":8}],2:[function(require,module,exports){
+module.exports = {
+	tag : 'h1',
+	attributes : {
 		'data-headline': 'title',
 		'class': 'headline'
 	},
-	content: 'This is boring content'
-}
+	content : 'This is boring content :( <div class="test">Foobar</div>',
+	events : {
+		'test click' : function (ev) {
+			'use strict';
+			console.log('clicked ', ev);
+		},
+		mouseover : function () {
+			'use strict';
+			console.log('over this, ', this);
+		}
+	}
+};
 
-var headline = new Element(h1);
+},{}],3:[function(require,module,exports){
+var El = require('./element');
+var h1 = require('./h1');
+
+var headline = new El(h1);
 var a = document.querySelector('.a');
 var b = document.querySelector('.b');
-var c = document.querySelector('.c');
+
+a.addEventListener('click', function (){
+	'use strict';
+	headline.remove();
+});
 
 headline.insertAfter(b);
 
-},{"./element":1}],3:[function(require,module,exports){
+setTimeout(function(){
+	'use strict';
+	headline.insertAfter(b);
+	console.log('done');
+}, 5000);
+
+
+},{"./element":1,"./h1":2}],4:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -402,7 +461,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -427,7 +486,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -515,14 +574,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1112,4 +1171,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":6,"_process":5,"inherits":4}]},{},[2]);
+},{"./support/isBuffer":7,"_process":6,"inherits":5}]},{},[3]);

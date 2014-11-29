@@ -1,42 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var El = require('./element');
-
-var h1 = {
-	tag : 'h1',
-	attributes : {
-		'data-headline': 'title',
-		'class': 'headline'
-	},
-	content : 'This is boring content :( <div class="test">Foobar</div>',
-	events : {
-		".test click" : function (ev) {
-			'use strict';
-			console.log('clicked ', ev);
-		},
-		mouseover : function (ev) {
-			'use strict';
-			console.log('over this, ', this);
-		}
-	}
-};
-
-var headline = new El(h1);
-var a = document.querySelector('.a');
-var b = document.querySelector('.b');
-
-a.addEventListener('click', function (){
-	headline.remove();
-});
-
-headline.insertAfter(b);
-
-setTimeout(function(){
-	headline.insertAfter(b);
-	console.log('done');
-}, 5000);
-
-
-},{"./element":2}],2:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
@@ -154,7 +116,49 @@ El.prototype.toggle = function (str) {
 
 module.exports = El;
 
-},{"events":3,"util":7}],3:[function(require,module,exports){
+},{"events":4,"util":8}],2:[function(require,module,exports){
+module.exports = {
+	tag : 'h1',
+	attributes : {
+		'data-headline': 'title',
+		'class': 'headline'
+	},
+	content : 'This is boring content :( <div class="test">Foobar</div>',
+	events : {
+		'test click' : function (ev) {
+			'use strict';
+			console.log('clicked ', ev);
+		},
+		mouseover : function () {
+			'use strict';
+			console.log('over this, ', this);
+		}
+	}
+};
+
+},{}],3:[function(require,module,exports){
+var El = require('./element');
+var h1 = require('./h1');
+
+var headline = new El(h1);
+var a = document.querySelector('.a');
+var b = document.querySelector('.b');
+
+a.addEventListener('click', function (){
+	'use strict';
+	headline.remove();
+});
+
+headline.insertAfter(b);
+
+setTimeout(function(){
+	'use strict';
+	headline.insertAfter(b);
+	console.log('done');
+}, 5000);
+
+
+},{"./element":1,"./h1":2}],4:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -457,7 +461,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -482,7 +486,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -570,14 +574,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1167,4 +1171,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":6,"_process":5,"inherits":4}]},{},[1]);
+},{"./support/isBuffer":7,"_process":6,"inherits":5}]},{},[3]);

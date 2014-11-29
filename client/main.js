@@ -1,35 +1,19 @@
 var El = require('./element');
-
-var h1 = {
-	tag : 'h1',
-	attributes : {
-		'data-headline': 'title',
-		'class': 'headline'
-	},
-	content : 'This is boring content :( <div class="test">Foobar</div>',
-	events : {
-		".test click" : function (ev) {
-			'use strict';
-			console.log('clicked ', ev);
-		},
-		mouseover : function (ev) {
-			'use strict';
-			console.log('over this, ', this);
-		}
-	}
-};
+var h1 = require('./h1');
 
 var headline = new El(h1);
 var a = document.querySelector('.a');
 var b = document.querySelector('.b');
 
 a.addEventListener('click', function (){
+	'use strict';
 	headline.remove();
 });
 
 headline.insertAfter(b);
 
 setTimeout(function(){
+	'use strict';
 	headline.insertAfter(b);
 	console.log('done');
 }, 5000);
