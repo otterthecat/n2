@@ -116,7 +116,7 @@ El.prototype.toggle = function (str) {
 
 module.exports = El;
 
-},{"events":4,"util":8}],2:[function(require,module,exports){
+},{"events":5,"util":9}],2:[function(require,module,exports){
 module.exports = {
 	tag : 'h1',
 	attributes : {
@@ -139,6 +139,7 @@ module.exports = {
 },{}],3:[function(require,module,exports){
 var El = require('./element');
 var h1 = require('./h1');
+var template = require('./template');
 
 var headline = new El(h1);
 var a = document.querySelector('.a');
@@ -149,6 +150,18 @@ a.addEventListener('click', function (){
 	headline.remove();
 });
 
+var t = new template({
+  tag: 'div',
+  attributes: {
+	'id' : 'test-template'
+  },
+  content : '<p data-template="foo"></p>'
+});
+
+console.log('template', t);
+
+t.render({foo: 'bar'});
+
 headline.insertAfter(b);
 
 setTimeout(function(){
@@ -158,7 +171,43 @@ setTimeout(function(){
 }, 5000);
 
 
-},{"./element":1,"./h1":2}],4:[function(require,module,exports){
+},{"./element":1,"./h1":2,"./template":4}],4:[function(require,module,exports){
+var L = require('./element');
+var util = require('util');
+
+var Template = function (obj) {
+	'use strict';
+	obj.tag = 'template';
+	L.call(this, obj);
+
+};
+
+util.inherits(Template, L);
+
+var applyTemplate = function (model, dom) {
+	'use strict';
+	console.log('dom', dom);
+	var selectors = dom.content.querySelectorAll('[data-template]');
+	console.log('model', model);
+	console.log('selectors', selectors);
+};
+
+Template.prototype.load = function () {
+	'use strict';
+
+	this.node.innerHTML = '<p id="tt" data-content="bar"></p>';
+	this.clone = document.importNode();
+};
+
+Template.prototype.render = function (data) {
+	'use strict';
+
+	applyTemplate(data, this.node);
+};
+
+module.exports = Template;
+
+},{"./element":1,"util":9}],5:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -461,7 +510,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -486,7 +535,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -574,14 +623,14 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1171,4 +1220,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":7,"_process":6,"inherits":5}]},{},[3]);
+},{"./support/isBuffer":8,"_process":7,"inherits":6}]},{},[3]);
