@@ -45,7 +45,7 @@ util.inherits(El, EventEmitter);
 El.prototype.init = function (obj) {
 	'use strict';
 
-	this.node = document.createElement(obj.tag);
+	this.node = document.createElement(obj.tag || 'div');
 	applyAttributes.call(this.node, obj.attributes);
 	this.node.innerHTML = obj.content;
 	applyEvents.call(this.node, obj.events);
