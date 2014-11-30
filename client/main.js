@@ -19,9 +19,7 @@ var t = new template({
   content : '<p data-template="foo"></p>'
 });
 
-console.log('template', t);
-
-t.render({foo: 'bar'});
+t.render(a, {foo: 'bar'});
 
 headline.insertAfter(b);
 

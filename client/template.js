@@ -4,18 +4,28 @@ var util = require('util');
 var Template = function (obj) {
 	'use strict';
 	obj.tag = 'template';
+	this.body = document.querySelector('body');
 	L.call(this, obj);
 
 };
 
 util.inherits(Template, L);
 
+var nodeListToArray = function (nList) {
+	'use strict';
+
+	return [].slice.call(nList);
+};
+
 var applyTemplate = function (model, dom) {
 	'use strict';
-	console.log('dom', dom);
 	var selectors = dom.content.querySelectorAll('[data-template]');
-	console.log('model', model);
-	console.log('selectors', selectors);
+	var selectorArray = nodeListToArray(selectors);
+	selectorArray.map(function(item){
+		item.innerHTML = model[item.getAttribute('data-template')];
+	});
+
+	return document.importNode(dom.content, true);
 };
 
 Template.prototype.load = function () {
@@ -25,10 +35,10 @@ Template.prototype.load = function () {
 	this.clone = document.importNode();
 };
 
-Template.prototype.render = function (data) {
+Template.prototype.render = function (target, data) {
 	'use strict';
-
-	applyTemplate(data, this.node);
+	this.body.appendChild(this.node);
+	target.appendChild(applyTemplate(data, this.node));
 };
 
 module.exports = Template;
