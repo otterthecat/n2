@@ -11,6 +11,7 @@ var Template = function (obj) {
 
 util.inherits(Template, L);
 
+// TODO - extract to file
 var nodeListToArray = function (nList) {
 	'use strict';
 
@@ -31,14 +32,18 @@ var applyTemplate = function (model, dom) {
 Template.prototype.load = function () {
 	'use strict';
 
+	// TODO - use ajax call to fetch external template file`
 	this.node.innerHTML = '<p id="tt" data-content="bar"></p>';
 	this.clone = document.importNode();
 };
 
-Template.prototype.render = function (target, data) {
+Template.prototype.render = function (data) {
 	'use strict';
 	this.body.appendChild(this.node);
-	target.appendChild(applyTemplate(data, this.node));
+	// NOTE: the returned value will be a document fragment,
+	// and thus should not be added within an element using
+	// innerHTML/contentText but rather appendChild (for example)
+	return applyTemplate(data, this.node);
 };
 
 module.exports = Template;

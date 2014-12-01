@@ -4,11 +4,10 @@ var template = require('./template');
 
 var headline = new El(h1);
 var a = document.querySelector('.a');
-var b = document.querySelector('.b');
 
 a.addEventListener('click', function (){
 	'use strict';
-	headline.remove();
+	headline.toggle('hide');
 });
 
 var t = new template({
@@ -19,13 +18,7 @@ var t = new template({
   content : '<p data-template="foo"></p>'
 });
 
-t.render(a, {foo: 'bar'});
+a.appendChild(t.render({foo : 'bar'}));
 
-headline.insertAfter(b);
-
-setTimeout(function(){
-	'use strict';
-	headline.insertAfter(b);
-	console.log('done');
-}, 5000);
+headline.insertAfter(a);
 
