@@ -15,7 +15,13 @@ var t = new template({
   attributes: {
 	'id' : 'test-template'
   },
-  content : '<p data-template="foo"></p>'
+  events: {
+	'a click': function (ev) {
+		ev.preventDefault();
+		alert('template link clicked!');
+	}
+  },
+  content : '<p data-template="foo"></p><a href="#">test link</a>'
 });
 
 a.appendChild(t.render({foo : 'bar'}));

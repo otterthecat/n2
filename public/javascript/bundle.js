@@ -154,7 +154,13 @@ var t = new template({
   attributes: {
 	'id' : 'test-template'
   },
-  content : '<p data-template="foo"></p>'
+  events: {
+	'a click': function (ev) {
+		ev.preventDefault();
+		alert('template link clicked!');
+	}
+  },
+  content : '<p data-template="foo"></p><a href="#">test link</a>'
 });
 
 a.appendChild(t.render({foo : 'bar'}));
@@ -169,6 +175,7 @@ var util = require('util');
 var Template = function (obj) {
 	'use strict';
 	obj.tag = 'template';
+	this.events = obj.events;
 	this.body = document.querySelector('body');
 	L.call(this, obj);
 
@@ -181,6 +188,25 @@ var nodeListToArray = function (nList) {
 	'use strict';
 
 	return [].slice.call(nList);
+};
+
+var applyEvents = function (obj) {
+	'use strict';
+	for(var ev in obj) {
+
+		var lastIndex = ev.lastIndexOf(' ');
+		if(lastIndex < 0){
+			this.addEventListener(ev, obj[ev]);
+		}
+		else {
+			var nodeArray = [].slice.call(this.querySelectorAll(ev.substr(0, lastIndex)));
+			nodeArray.forEach(function (el){
+				el.addEventListener(ev.substr(lastIndex + 1), obj[ev]);
+			});
+		}
+		this.addEventListener(ev, obj[ev]);
+	}
+	return this;
 };
 
 var applyTemplate = function (model, dom) {
@@ -208,7 +234,7 @@ Template.prototype.render = function (data) {
 	// NOTE: the returned value will be a document fragment,
 	// and thus should not be added within an element using
 	// innerHTML/contentText but rather appendChild (for example)
-	return applyTemplate(data, this.node);
+	return applyEvents.call(applyTemplate(data, this.node), this.events);
 };
 
 module.exports = Template;
