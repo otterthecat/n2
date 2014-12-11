@@ -15,6 +15,9 @@ var t = new template({
   attributes: {
 	'id' : 'test-template'
   },
+  model: {
+  	foo: 'doo'
+  },
   events: {
 	'a click': function (ev) {
 		ev.preventDefault();
@@ -24,7 +27,7 @@ var t = new template({
   content : '<p data-template="foo"></p><a href="#">test link</a>'
 });
 
-a.appendChild(t.render({foo : 'bar'}));
+a.appendChild(t.render());
 
 headline.insertAfter(a);
 

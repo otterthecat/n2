@@ -5,6 +5,7 @@ var Template = function (obj) {
 	'use strict';
 	obj.tag = 'template';
 	this.events = obj.events;
+	this.model = obj.model;
 	this.body = document.querySelector('body');
 	L.call(this, obj);
 
@@ -63,7 +64,7 @@ Template.prototype.render = function (data) {
 	// NOTE: the returned value will be a document fragment,
 	// and thus should not be added within an element using
 	// innerHTML/contentText but rather appendChild (for example)
-	return applyEvents.call(applyTemplate(data, this.node), this.events);
+	return applyEvents.call(applyTemplate(data || this.model, this.node), this.events);
 };
 
 module.exports = Template;
