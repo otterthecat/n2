@@ -163,10 +163,14 @@ var t = new template({
 		alert('template link clicked!');
 	}
   },
-  content : '<p data-template="foo"></p><a href="#">test link</a>'
+  content : '<div><p data-template="foo"></p><a href="#">test link</a></div>'
 });
 
 a.appendChild(t.render());
+
+t.refresh({foo: 'stuff'});
+
+t.insertAfter(document.querySelector('.c'));
 
 headline.insertAfter(a);
 
@@ -182,6 +186,7 @@ var Template = function (obj) {
 	this.model = obj.model;
 	this.body = document.querySelector('body');
 	L.call(this, obj);
+	this.template = this.node;
 
 };
 
@@ -234,11 +239,20 @@ Template.prototype.load = function () {
 
 Template.prototype.render = function (data) {
 	'use strict';
-	this.body.appendChild(this.node);
+	this.body.appendChild(this.template);
 	// NOTE: the returned value will be a document fragment,
 	// and thus should not be added within an element using
 	// innerHTML/contentText but rather appendChild (for example)
-	return applyEvents.call(applyTemplate(data || this.model, this.node), this.events);
+	this.node = applyTemplate(data || this.model, this.template).firstElementChild;
+	return applyEvents.call(this.node, this.events);
+};
+
+Template.prototype.refresh = function (data) {
+	'use strict';
+	var newRender = applyTemplate(data || this.model, this.template).firstElementChild;
+	applyEvents.call(newRender, this.events);
+	this.node.parentNode.replaceChild(newRender, this.node);
+	this.node = newRender;
 };
 
 module.exports = Template;

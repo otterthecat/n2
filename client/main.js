@@ -24,10 +24,14 @@ var t = new template({
 		alert('template link clicked!');
 	}
   },
-  content : '<p data-template="foo"></p><a href="#">test link</a>'
+  content : '<div><p data-template="foo"></p><a href="#">test link</a></div>'
 });
 
 a.appendChild(t.render());
+
+t.refresh({foo: 'stuff'});
+
+t.insertAfter(document.querySelector('.c'));
 
 headline.insertAfter(a);
 
