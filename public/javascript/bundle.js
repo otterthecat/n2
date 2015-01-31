@@ -1,4 +1,78 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var El = require('./element');
+var h1 = require('./h1');
+var button = require('./button');
+var template = require('./template');
+
+
+var myButton = El.prototype.extend({
+  readNode: function(selector){
+    'use strict';
+    var nodeList = document.querySelectorAll(selector);
+    for(var i = 0; i < nodeList.length; i += 1){
+      console.log('found node ', nodeList[i]);
+    }
+  }
+});
+
+
+var btn = new myButton(button);
+console.log('btn', btn);
+btn.insertAfter(document.querySelector('.c'));
+
+var headline = new El(h1);
+var a = document.querySelector('.a');
+
+a.addEventListener('click', function (){
+	'use strict';
+	headline.toggle('hide');
+});
+
+var t = new template({
+  tag: 'div',
+  attributes: {
+	'id' : 'test-template'
+  },
+  model: {
+  	foo: 'doo'
+  },
+  events: {
+	'a click': function (ev) {
+		ev.preventDefault();
+		alert('template link clicked!');
+	}
+  },
+  content : '<div><p data-template="foo"></p><a href="#">test link</a></div>'
+});
+
+a.appendChild(t.render());
+
+t.refresh({foo: 'stuff'});
+
+t.insertAfter(document.querySelector('.c'));
+
+headline.insertAfter(a);
+
+btn.node.onclick = function(){
+  this.readNode('div');
+}.bind(btn);
+
+
+},{"./button":2,"./element":3,"./h1":4,"./template":5}],2:[function(require,module,exports){
+module.exports = {
+	tag : 'button',
+	attributes : {
+
+	},
+	content : 'This is my button',
+	events : {
+		'click' : function(ev){
+			'use strict';
+			console.log('BUTTON HAS BEEN CLICKED');
+		}
+	}
+};
+},{}],3:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
@@ -51,6 +125,21 @@ El.prototype.init = function (obj) {
 	this.node.innerHTML = obj.content;
 	applyEvents.call(this.node, obj.events);
 	return this;
+};
+
+El.prototype.extend = function(obj){
+
+	var newEl = El;
+	for(item in obj){
+		if(!newEl.prototype.hasOwnProperty(item)){
+			newEl.prototype[item] = obj[item];
+		}
+		else {
+			console.log('You are trying to override an object in El: ', item);
+		}
+	}
+
+	return newEl;
 };
 
 El.prototype.append = function (targetNode) {
@@ -116,7 +205,7 @@ El.prototype.toggle = function (str) {
 
 module.exports = El;
 
-},{"events":5,"util":9}],2:[function(require,module,exports){
+},{"events":6,"util":10}],4:[function(require,module,exports){
 module.exports = {
 	tag : 'h1',
 	attributes : {
@@ -136,46 +225,7 @@ module.exports = {
 	}
 };
 
-},{}],3:[function(require,module,exports){
-var El = require('./element');
-var h1 = require('./h1');
-var template = require('./template');
-
-var headline = new El(h1);
-var a = document.querySelector('.a');
-
-a.addEventListener('click', function (){
-	'use strict';
-	headline.toggle('hide');
-});
-
-var t = new template({
-  tag: 'div',
-  attributes: {
-	'id' : 'test-template'
-  },
-  model: {
-  	foo: 'doo'
-  },
-  events: {
-	'a click': function (ev) {
-		ev.preventDefault();
-		alert('template link clicked!');
-	}
-  },
-  content : '<div><p data-template="foo"></p><a href="#">test link</a></div>'
-});
-
-a.appendChild(t.render());
-
-t.refresh({foo: 'stuff'});
-
-t.insertAfter(document.querySelector('.c'));
-
-headline.insertAfter(a);
-
-
-},{"./element":1,"./h1":2,"./template":4}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var L = require('./element');
 var util = require('util');
 
@@ -257,7 +307,7 @@ Template.prototype.refresh = function (data) {
 
 module.exports = Template;
 
-},{"./element":1,"util":9}],5:[function(require,module,exports){
+},{"./element":3,"util":10}],6:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -560,7 +610,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -585,73 +635,43 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
+var queue = [];
+var draining = false;
 
-process.nextTick = (function () {
-    var canSetImmediate = typeof window !== 'undefined'
-    && window.setImmediate;
-    var canMutationObserver = typeof window !== 'undefined'
-    && window.MutationObserver;
-    var canPost = typeof window !== 'undefined'
-    && window.postMessage && window.addEventListener
-    ;
-
-    if (canSetImmediate) {
-        return function (f) { return window.setImmediate(f) };
+function drainQueue() {
+    if (draining) {
+        return;
     }
-
-    var queue = [];
-
-    if (canMutationObserver) {
-        var hiddenDiv = document.createElement("div");
-        var observer = new MutationObserver(function () {
-            var queueList = queue.slice();
-            queue.length = 0;
-            queueList.forEach(function (fn) {
-                fn();
-            });
-        });
-
-        observer.observe(hiddenDiv, { attributes: true });
-
-        return function nextTick(fn) {
-            if (!queue.length) {
-                hiddenDiv.setAttribute('yes', 'no');
-            }
-            queue.push(fn);
-        };
+    draining = true;
+    var currentQueue;
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        var i = -1;
+        while (++i < len) {
+            currentQueue[i]();
+        }
+        len = queue.length;
     }
-
-    if (canPost) {
-        window.addEventListener('message', function (ev) {
-            var source = ev.source;
-            if ((source === window || source === null) && ev.data === 'process-tick') {
-                ev.stopPropagation();
-                if (queue.length > 0) {
-                    var fn = queue.shift();
-                    fn();
-                }
-            }
-        }, true);
-
-        return function nextTick(fn) {
-            queue.push(fn);
-            window.postMessage('process-tick', '*');
-        };
+    draining = false;
+}
+process.nextTick = function (fun) {
+    queue.push(fun);
+    if (!draining) {
+        setTimeout(drainQueue, 0);
     }
-
-    return function nextTick(fn) {
-        setTimeout(fn, 0);
-    };
-})();
+};
 
 process.title = 'browser';
 process.browser = true;
 process.env = {};
 process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
 
 function noop() {}
 
@@ -672,15 +692,16 @@ process.cwd = function () { return '/' };
 process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
+process.umask = function() { return 0; };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1270,4 +1291,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":8,"_process":7,"inherits":6}]},{},[3]);
+},{"./support/isBuffer":9,"_process":8,"inherits":7}]},{},[1]);

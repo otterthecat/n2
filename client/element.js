@@ -52,6 +52,21 @@ El.prototype.init = function (obj) {
 	return this;
 };
 
+El.prototype.extend = function(obj){
+
+	var newEl = El;
+	for(item in obj){
+		if(!newEl.prototype.hasOwnProperty(item)){
+			newEl.prototype[item] = obj[item];
+		}
+		else {
+			console.log('You are trying to override an object in El: ', item);
+		}
+	}
+
+	return newEl;
+};
+
 El.prototype.append = function (targetNode) {
 	'use strict';
 

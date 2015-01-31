@@ -1,6 +1,23 @@
 var El = require('./element');
 var h1 = require('./h1');
+var button = require('./button');
 var template = require('./template');
+
+
+var myButton = El.prototype.extend({
+  readNode: function(selector){
+    'use strict';
+    var nodeList = document.querySelectorAll(selector);
+    for(var i = 0; i < nodeList.length; i += 1){
+      console.log('found node ', nodeList[i]);
+    }
+  }
+});
+
+
+var btn = new myButton(button);
+console.log('btn', btn);
+btn.insertAfter(document.querySelector('.c'));
 
 var headline = new El(h1);
 var a = document.querySelector('.a');
@@ -34,4 +51,8 @@ t.refresh({foo: 'stuff'});
 t.insertAfter(document.querySelector('.c'));
 
 headline.insertAfter(a);
+
+btn.node.onclick = function(){
+  this.readNode('div');
+}.bind(btn);
 
