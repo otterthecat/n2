@@ -9,5 +9,10 @@ module.exports = {
 			'use strict';
 			console.log('BUTTON HAS BEEN CLICKED');
 		}
+	},
+	listeners: {
+		'click': function(){
+			this.emit('action', this);
+		}
 	}
 };

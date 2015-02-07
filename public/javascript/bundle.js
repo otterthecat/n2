@@ -2,63 +2,35 @@
 var El = require('./element');
 var h1 = require('./h1');
 var button = require('./button');
+var bMod = require('./buttonModule');
 var template = require('./template');
+var view = require('./view');
 
-
-var myButton = El.prototype.extend({
-  readNode: function(selector){
-    'use strict';
-    var nodeList = document.querySelectorAll(selector);
-    for(var i = 0; i < nodeList.length; i += 1){
-      console.log('found node ', nodeList[i]);
-    }
-  }
-});
-
-
+var myButton = El.prototype.extend(bMod);
 var btn = new myButton(button);
-console.log('btn', btn);
 btn.insertAfter(document.querySelector('.c'));
+btn.on('action', function(arg){
+  var words = ['cat', 'dog', 'mouse'];
+  t.refresh({foo: words[Math.round(Math.random() * (words.length - 1))]});
+});
 
-var headline = new El(h1);
 var a = document.querySelector('.a');
-
 a.addEventListener('click', function (){
-	'use strict';
-	headline.toggle('hide');
+  'use strict';
+  headline.toggle('hide');
 });
 
-var t = new template({
-  tag: 'div',
-  attributes: {
-	'id' : 'test-template'
-  },
-  model: {
-  	foo: 'doo'
-  },
-  events: {
-	'a click': function (ev) {
-		ev.preventDefault();
-		alert('template link clicked!');
-	}
-  },
-  content : '<div><p data-template="foo"></p><a href="#">test link</a></div>'
-});
-
-a.appendChild(t.render());
-
+var t = new template(view);
+document.querySelector('.c').appendChild(t.render());
 t.refresh({foo: 'stuff'});
 
-t.insertAfter(document.querySelector('.c'));
+var headline = new El(h1);
+headline.insertAfter(a)
+        .on('toggle', function(){
+          t.refresh({foo : 'moo'});
+        });
 
-headline.insertAfter(a);
-
-btn.node.onclick = function(){
-  this.readNode('div');
-}.bind(btn);
-
-
-},{"./button":2,"./element":3,"./h1":4,"./template":5}],2:[function(require,module,exports){
+},{"./button":2,"./buttonModule":3,"./element":4,"./h1":5,"./template":6,"./view":7}],2:[function(require,module,exports){
 module.exports = {
 	tag : 'button',
 	attributes : {
@@ -70,9 +42,29 @@ module.exports = {
 			'use strict';
 			console.log('BUTTON HAS BEEN CLICKED');
 		}
+	},
+	listeners: {
+		'click': function(){
+			this.emit('action', this);
+		}
 	}
 };
 },{}],3:[function(require,module,exports){
+module.exports = {
+  readNode: function(selector){
+    'use strict';
+
+    var nodeList = document.querySelectorAll(selector);
+    for(var i = 0; i < nodeList.length; i += 1){
+      console.log('found node ', nodeList[i]);
+    }
+  },
+  init: function(){
+    'use strict';
+    console.log('this is a test of the emergency broadcast system');
+  }
+};
+},{}],4:[function(require,module,exports){
 var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
@@ -89,47 +81,81 @@ var applyAttributes = function (obj) {
 	return this;
 };
 
+var applyListeners = function (obj){
+	'use strict';
+
+	var _this = this;
+	if (typeof obj === 'undefined'){
+		return false
+	}
+	for(var ev in obj){
+		_this.on(ev, obj[ev]);
+	}
+	return _this;
+};
+
 var applyEvents = function (obj) {
 	'use strict';
+	var _this = this;
 	for(var ev in obj) {
 
 		var lastIndex = ev.lastIndexOf(' ');
 		if(lastIndex < 0){
-			this.addEventListener(ev, obj[ev]);
-		}
-		else {
-			var nodeArray = [].slice.call(this.querySelectorAll(ev.substr(0, lastIndex)));
-			nodeArray.forEach(function (el){
-				el.addEventListener(ev.substr(lastIndex + 1), obj[ev]);
+			_this.node.addEventListener(ev, function(e){
+				obj[ev](e);
+				_this.emit(ev, e, _this);
 			});
 		}
-		this.addEventListener(ev, obj[ev]);
+		else {
+			var nodeArray = [].slice.call(_this.node.querySelectorAll(ev.substr(0, lastIndex)));
+			nodeArray.forEach(function (el){
+				el.addEventListener(ev.substr(lastIndex + 1), function(e){
+					//use defined callback on node
+					obj[ev](e);
+
+					// have object emit event
+					_this.emit(ev, e, _this);
+				});
+			});
+		}
 	}
-	return this;
+	return _this;
 };
 
 var El = function (obj) {
 	'use strict';
 
+	var _this = this;
 	EventEmitter.call(this);
-	this.init(obj);
+	_this._init(obj);
 };
 
 util.inherits(El, EventEmitter);
 
-El.prototype.init = function (obj) {
+El.prototype._init = function (obj) {
 	'use strict';
 
 	this.node = document.createElement(obj.tag || 'div');
 	applyAttributes.call(this.node, obj.attributes);
 	this.node.innerHTML = obj.content;
-	applyEvents.call(this.node, obj.events);
+	applyEvents.call(this, obj.events);
+	applyListeners.call(this, obj.listeners);
+
+	// call user defined init
+	if(typeof this.init === 'function') {
+		this.init.call(this, obj);
+	}
 	return this;
 };
 
 El.prototype.extend = function(obj){
 
-	var newEl = El;
+	var newEl = function(obj){
+		El.call(this, obj);
+	};
+
+	newEl.prototype = Object.create(El.prototype);
+
 	for(item in obj){
 		if(!newEl.prototype.hasOwnProperty(item)){
 			newEl.prototype[item] = obj[item];
@@ -138,7 +164,7 @@ El.prototype.extend = function(obj){
 			console.log('You are trying to override an object in El: ', item);
 		}
 	}
-
+	newEl.prototype.constructor = newEl;
 	return newEl;
 };
 
@@ -146,6 +172,7 @@ El.prototype.append = function (targetNode) {
 	'use strict';
 
 	targetNode.appendChild(this.node);
+	this.emit('append', this);
 	return this;
 };
 
@@ -153,6 +180,7 @@ El.prototype.insertBefore = function (targetNode) {
 	'use strict';
 
 	targetNode.parentNode.insertBefore(this.node, targetNode);
+	this.emit('insertBefore', this);
 	return this;
 };
 
@@ -160,6 +188,7 @@ El.prototype.insertAfter = function (targetNode) {
 	'use strict';
 
 	this.insertBefore(targetNode.nextSibling);
+	this.emit('insertAfter', this);
 	return this;
 };
 
@@ -167,6 +196,7 @@ El.prototype.prepend = function (targetNode) {
 	'use strict';
 
 	targetNode.insertBefore(this.node, targetNode.firstChild);
+	this.emit('prepend', this);
 	return this;
 };
 
@@ -201,11 +231,12 @@ El.prototype.toggle = function (str) {
 	// yeah, classList isn't well supported in IE until 10
 	// oh well.
 	this.node.classList.toggle(str);
+	this.emit('toggle', this);
 };
 
 module.exports = El;
 
-},{"events":6,"util":10}],4:[function(require,module,exports){
+},{"events":8,"util":12}],5:[function(require,module,exports){
 module.exports = {
 	tag : 'h1',
 	attributes : {
@@ -218,14 +249,22 @@ module.exports = {
 			'use strict';
 			console.log('clicked ', ev);
 		},
+		'baz' : function () {
+			console.log('baz ho');
+		},
 		mouseover : function () {
 			'use strict';
 			console.log('over this, ', this);
 		}
+	},
+	listeners: {
+		'toggle': function(){
+			console.log('hehehehehe i have been toggled');
+		}
 	}
 };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var L = require('./element');
 var util = require('util');
 
@@ -294,6 +333,7 @@ Template.prototype.render = function (data) {
 	// and thus should not be added within an element using
 	// innerHTML/contentText but rather appendChild (for example)
 	this.node = applyTemplate(data || this.model, this.template).firstElementChild;
+	this.emit('render', data);
 	return applyEvents.call(this.node, this.events);
 };
 
@@ -302,12 +342,35 @@ Template.prototype.refresh = function (data) {
 	var newRender = applyTemplate(data || this.model, this.template).firstElementChild;
 	applyEvents.call(newRender, this.events);
 	this.node.parentNode.replaceChild(newRender, this.node);
+	this.emit('refresh', data);
 	this.node = newRender;
 };
 
 module.exports = Template;
 
-},{"./element":3,"util":10}],6:[function(require,module,exports){
+},{"./element":4,"util":12}],7:[function(require,module,exports){
+module.exports = {
+  tag: 'div',
+  attributes: {
+	'id' : 'test-template'
+  },
+  model: {
+  	foo: 'doo'
+  },
+  events: {
+	'a click': function (ev) {
+		ev.preventDefault();
+		alert('template link clicked!');
+	}
+  },
+  content : '<div><p data-template="foo"></p><a href="#">test link</a></div>',
+  listeners: {
+    'refresh': function(data){
+        console.log('refreshed with ', data);
+    }
+  }
+};
+},{}],8:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -610,7 +673,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -635,7 +698,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -694,14 +757,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -1291,4 +1354,4 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":9,"_process":8,"inherits":7}]},{},[1]);
+},{"./support/isBuffer":11,"_process":10,"inherits":9}]},{},[1]);

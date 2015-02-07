@@ -10,9 +10,17 @@ module.exports = {
 			'use strict';
 			console.log('clicked ', ev);
 		},
+		'baz' : function () {
+			console.log('baz ho');
+		},
 		mouseover : function () {
 			'use strict';
 			console.log('over this, ', this);
+		}
+	},
+	listeners: {
+		'toggle': function(){
+			console.log('hehehehehe i have been toggled');
 		}
 	}
 };

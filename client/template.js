@@ -66,6 +66,7 @@ Template.prototype.render = function (data) {
 	// and thus should not be added within an element using
 	// innerHTML/contentText but rather appendChild (for example)
 	this.node = applyTemplate(data || this.model, this.template).firstElementChild;
+	this.emit('render', data);
 	return applyEvents.call(this.node, this.events);
 };
 
@@ -74,6 +75,7 @@ Template.prototype.refresh = function (data) {
 	var newRender = applyTemplate(data || this.model, this.template).firstElementChild;
 	applyEvents.call(newRender, this.events);
 	this.node.parentNode.replaceChild(newRender, this.node);
+	this.emit('refresh', data);
 	this.node = newRender;
 };
 
